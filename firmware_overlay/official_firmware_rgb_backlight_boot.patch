@@ -1,0 +1,56 @@
+diff --git a/applications/services/notification/notification_app.c b/applications/services/notification/notification_app.c
+index 35d2fe6..3324fab 100644
+--- a/applications/services/notification/notification_app.c
++++ b/applications/services/notification/notification_app.c
+@@ -6,6 +6,7 @@
+ #include <gui/gui_i.h>
+ #include <u8g2_glue.h>
+ #include <lib/toolbox/float_tools.h>
++#include <rgb_backlight.h>
+ #include "notification.h"
+ #include "notification_messages.h"
+ #include "notification_app.h"
+@@ -576,6 +577,8 @@ static void notification_apply_settings(NotificationApp* app) {
+ }
+ 
+ static void notification_init_settings(NotificationApp* app) {
++    rgb_backlight_load_settings();
++
+     Storage* storage = furi_record_open(RECORD_STORAGE);
+     furi_pubsub_subscribe(storage_get_pubsub(storage), notification_storage_callback, app);
+ 
+diff --git a/targets/f7/furi_hal/furi_hal_light.c b/targets/f7/furi_hal/furi_hal_light.c
+index 621478d..929905d 100644
+--- a/targets/f7/furi_hal/furi_hal_light.c
++++ b/targets/f7/furi_hal/furi_hal_light.c
+@@ -2,6 +2,7 @@
+ #include <furi_hal_resources.h>
+ #include <furi_hal_light.h>
+ #include <lp5562.h>
++#include <rgb_backlight.h>
+ #include <stdint.h>
+ 
+ #define LED_CURRENT_RED   (50u)
+@@ -42,9 +43,19 @@ void furi_hal_light_set(Light light, uint8_t value) {
+         lp5562_set_channel_value(&furi_hal_i2c_handle_power, LP5562ChannelBlue, value);
+     }
+     if(light & LightBacklight) {
+-        uint8_t prev = lp5562_get_channel_value(&furi_hal_i2c_handle_power, LP5562ChannelWhite);
+-        lp5562_execute_ramp(
+-            &furi_hal_i2c_handle_power, LP5562Engine1, LP5562ChannelWhite, prev, value, 100);
++        rgb_backlight_update(value, false);
++
++        if(rgb_backlight_is_enabled()) {
++            lp5562_stop_program(&furi_hal_i2c_handle_power, LP5562Engine1);
++            lp5562_set_channel_src(
++                &furi_hal_i2c_handle_power, LP5562ChannelWhite, LP5562Direct);
++            lp5562_set_channel_value(&furi_hal_i2c_handle_power, LP5562ChannelWhite, 0x00);
++        } else {
++            uint8_t prev =
++                lp5562_get_channel_value(&furi_hal_i2c_handle_power, LP5562ChannelWhite);
++            lp5562_execute_ramp(
++                &furi_hal_i2c_handle_power, LP5562Engine1, LP5562ChannelWhite, prev, value, 100);
++        }
+     }
+     furi_hal_i2c_release(&furi_hal_i2c_handle_power);
+ }

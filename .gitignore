@@ -1,0 +1,9 @@
+dist/
+build/
+.ufbt/
+.vscode/
+compile_commands.json
+*.elf
+*.fap
+*.lst
+*.map

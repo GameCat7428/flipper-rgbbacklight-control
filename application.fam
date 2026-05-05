@@ -1,0 +1,16 @@
+# For details & more options, see documentation/AppManifests.md in firmware repo
+
+App(
+    appid="rgb_backlight_settings",
+    name="RGB Backlight",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="rgb_backlight_settings_app",
+    stack_size=4 * 1024,
+    fap_category="Tools",
+    fap_version="0.1",
+    fap_icon="rgb_backlight_settings.png",
+    fap_description="RGB backlight configurator for PA8 hardware mod",
+    fap_author="OpenCode",
+    fap_weburl="https://github.com/example/flipper-rgb-backlight",
+    fap_icon_assets="images",
+)
